@@ -130,10 +130,15 @@ TNode Evaluate<TNode>(TNode start) where TNode:Node<TNode> {
 	while(true) {
 		var minCompleteCost = evaluated.Where(i => i.Value.IsComplete).Min(i => (int?)i.Value.CurrentCost);
 		if(minCompleteCost.HasValue) {
-			if(toEvaluate.All(i => i.Value.CurrentCost >= minCompleteCost.Value)) {
+			if(!toEvaluate.Any(i => i.Value.CurrentCost < minCompleteCost.Value)) {
 				// our smallest complete current cost is less than the cost of everything we haven't checked yet, so we're guaranteed optimal
 				break;
 			}
+		}
+		
+		if(toEvaluate.Count == 0) {
+			evaluated.Values.Dump(1);
+			return evaluated.Values.OrderByDescending(i => i.CurrentCost).First();
 		}
 		
 		var work = toEvaluate.OrderBy(i => i.Value.EstimatedCost).First().Value;
@@ -183,7 +188,15 @@ IEnumerable<T> SelectDeep<T>(T thing, Func<T, IEnumerable<T>> selector)
 void Main()
 {
 //	var initialState = new GameNode() { PlayerHP = 10, PlayerMana = 250, BossHP = 13, BossDmg = 8, IsPlayerTurn = false }; // player goes first
-	var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 55, BossDmg = 8, IsPlayerTurn = false }; // player goes first
+	var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 55, BossDmg = 8, IsPlayerTurn = false }; // player goes first -> sean gets 1289 (I get 1295)
+	// ??
+//missile	53	1
+//drain	73	2
+//shield	113	1
+//Poison	173	3
+//recharge	229	2
+
+	//var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 58, BossDmg = 9, IsPlayerTurn = false }; // player goes first -> sean gets 1309
 	var finalState = Evaluate(initialState);
 	finalState.Dump(1);
 	var states = SelectDeep(finalState, s => s == null || s.Parent == null || s.Parent.Item1 == null ? new GameNode[0] : new [] { s.Parent.Item1 }).ToList();
