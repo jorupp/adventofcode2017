@@ -8,6 +8,7 @@ abstract class Node<TNode> where TNode:Node<TNode> {
 	public abstract int EstimatedCost { get; }
 	public abstract object[] Keys { get; }
 	public string Key { get { return string.Join("_", Keys); } }
+	public abstract string Description { get; }
 }
 
 class GameNode : Node<GameNode> {
@@ -58,6 +59,11 @@ class GameNode : Node<GameNode> {
 	public override int CurrentCost { get { return SpentMana + (Parent != null && Parent.Item2 == "Do nothing" ? 1 : 0); } }
 	public override int EstimatedCost { get { return CurrentCost + Math.Max(0, (BossHP * 9)); } } // most efficient damage to boss is 9 mana per HP
 	public override object[] Keys { get { return new object[] { PlayerMana, PlayerHP, BossHP, BossDmg, CurrentCost, ShieldTurnsLeft, PoisonTurnsLeft, RechargeTurnsLeft, ShieldActive, PoisonActive, RechargeActive, IsPlayerTurn }; } }
+	public override string Description { get {
+		var states = SelectDeep(this, s => s == null || s.Parent == null || s.Parent.Item1 == null ? new GameNode[0] : new [] { s.Parent.Item1 }).ToList();
+		var moves = states.Where(i => i.Parent != null && i.Parent.Item2 != null).Where(i => i.IsPlayerTurn).Select(i => i.Parent.Item2).Reverse().ToList();
+		return string.Join(", ", moves);
+	} }
 	
 	public override IEnumerable<GameNode> GetAdjacent() {
 		if(this.IsPlayerTurn) {
@@ -94,7 +100,7 @@ class GameNode : Node<GameNode> {
 				next.PlayerHP += 2;
 				yield return next;
 			}
-			if(this.ShieldTurnsLeft == 0)
+			if(this.ShieldTurnsLeft <= 1)
 			{
 				var next = new GameNode(this, "Shield");
 				next.PlayerMana -= 113;
@@ -102,7 +108,7 @@ class GameNode : Node<GameNode> {
 				next.ShieldTurnsLeft = 6;
 				yield return next;
 			}
-			if(this.PoisonTurnsLeft == 0)
+			if(this.PoisonTurnsLeft <= 1)
 			{
 				var next = new GameNode(this, "Poison");
 				next.PlayerMana -= 173;
@@ -110,7 +116,7 @@ class GameNode : Node<GameNode> {
 				next.PoisonTurnsLeft = 6;
 				yield return next;
 			}
-			if(this.RechargeTurnsLeft == 0)
+			if(this.RechargeTurnsLeft <= 1)
 			{
 				var next = new GameNode(this, "Recharge");
 				next.PlayerMana -= 229;
@@ -130,13 +136,14 @@ TNode Evaluate<TNode>(TNode start) where TNode:Node<TNode> {
 	while(true) {
 		var minCompleteCost = evaluated.Where(i => i.Value.IsComplete).Min(i => (int?)i.Value.CurrentCost);
 		if(minCompleteCost.HasValue) {
-			if(!toEvaluate.Any(i => i.Value.CurrentCost < minCompleteCost.Value)) {
+			if(!toEvaluate.Any(i => i.Value.EstimatedCost < minCompleteCost.Value)) {
 				// our smallest complete current cost is less than the cost of everything we haven't checked yet, so we're guaranteed optimal
 				break;
 			}
 		}
 		
 		if(toEvaluate.Count == 0) {
+			// error - should never happen
 			evaluated.Values.Dump(1);
 			return evaluated.Values.OrderByDescending(i => i.CurrentCost).First();
 		}
@@ -165,16 +172,27 @@ TNode Evaluate<TNode>(TNode start) where TNode:Node<TNode> {
 			}
 		}
 	}
-	
-	//evaluated.Values.OrderBy(i => i.CurrentCost).Dump(1);
-	//toEvaluate.Values.Dump();
-	
-	//evaluated.Where(i => i.Value.IsComplete).Select (i => i.Value).OrderBy(i => i.CurrentCost).Dump(1);
-	
+//	
+//	//evaluated.Values.OrderBy(i => i.CurrentCost).Dump(1);
+//	//toEvaluate.Values.Dump();
+//	
+//	//evaluated.Where(i => i.Value.IsComplete).Select (i => i.Value).OrderBy(i => i.CurrentCost).Dump(1);
+//	var parts = new [] { 173, 229, 73, 173, 229, 113, 173, 73, 53 };
+//	var sums = Enumerable.Range(0, parts.Length).Select(ix => parts.Take(ix + 1).Sum()).ToArray();
+//	sums.Dump();
+//
+//	var candidates = evaluated.Where(i => sums.Contains(i.Value.CurrentCost)).OrderBy(i => i.Value.CurrentCost).ThenBy(i => i.Value.EstimatedCost).ToArray();
+//	//candidates.Select(i => i.Value).Dump(1);
+//	
+//	var v = evaluated.FirstOrDefault (i => i.Value.CurrentCost == 475 && i.Value.EstimatedCost == 817).Value;
+//	new [] { v }.Concat(v.GetAdjacent()).Dump(1);
+//	
+//	return candidates.First().Value;
+
 	return evaluated.Where(i => i.Value.IsComplete).OrderBy(i => i.Value.CurrentCost).First().Value;
 }
 
-IEnumerable<T> SelectDeep<T>(T thing, Func<T, IEnumerable<T>> selector) 
+public static IEnumerable<T> SelectDeep<T>(T thing, Func<T, IEnumerable<T>> selector) 
 {
 	yield return thing;
 	foreach(var t in selector(thing)) 
@@ -188,13 +206,14 @@ IEnumerable<T> SelectDeep<T>(T thing, Func<T, IEnumerable<T>> selector)
 void Main()
 {
 //	var initialState = new GameNode() { PlayerHP = 10, PlayerMana = 250, BossHP = 13, BossDmg = 8, IsPlayerTurn = false }; // player goes first
-	var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 55, BossDmg = 8, IsPlayerTurn = false }; // player goes first -> sean gets 1289 (I get 1295)
+	//var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 55, BossDmg = 8, IsPlayerTurn = false }; // player goes first -> sean gets 1289 (I get 1295)
 	// ??
 //missile	53	1
 //drain	73	2
 //shield	113	1
 //Poison	173	3
 //recharge	229	2
+	// poison, recharge, drain, poison, recharge, shield, poison, drain, magic missile
 
 	//var initialState = new GameNode() { PlayerHP = 50, PlayerMana = 500, BossHP = 58, BossDmg = 9, IsPlayerTurn = false }; // player goes first -> sean gets 1309
 	var finalState = Evaluate(initialState);
