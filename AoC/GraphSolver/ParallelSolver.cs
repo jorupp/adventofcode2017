@@ -48,16 +48,6 @@ namespace AoC.GraphSolver
                             {
                                 continue;
                             }
-                            if (next.IsComplete)
-                            {
-                                if (null == bestComplete || next.CurrentCost < bestComplete.CurrentCost)
-                                {
-                                    // new best - remember it
-                                    bestComplete = next;
-                                }
-                                // no need to continue to evaluate complete nodes
-                                continue;
-                            }
                             var x = next.Key; // make sure the key is built
                             results.Add(next);
                         }
@@ -68,6 +58,16 @@ namespace AoC.GraphSolver
                 {
                     foreach (var next in task.Result)
                     {
+                        if (next.IsComplete)
+                        {
+                            if (null == bestComplete || next.CurrentCost < bestComplete.CurrentCost)
+                            {
+                                // new best - remember it
+                                bestComplete = next;
+                            }
+                            // no need to continue to evaluate complete nodes
+                            continue;
+                        }
                         if (bestNodes.TryGetValue(next.Key, out var existing))
                         {
                             // we've already seen this node - update the cost if better, but no need to process further
