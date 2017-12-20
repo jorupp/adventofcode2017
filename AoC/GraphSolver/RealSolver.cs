@@ -9,12 +9,12 @@ namespace AoC.GraphSolver
 {
     public class RealSolver : ISolver
     {
-        public TNode Evaluate<TNode>(TNode start) where TNode : Node<TNode>
+        public TNode Evaluate<TNode, TKey>(TNode start, TKey key) where TNode : Node<TNode, TKey>
         {
             TNode bestComplete = null;
-            var bestNodes = new Dictionary<string, TNode>();
-            var toEvaluate = new SimplePriorityQueue<string, decimal>();
-            var evaluated = new HashSet<string>();
+            var bestNodes = new Dictionary<TKey, TNode>();
+            var toEvaluate = new SimplePriorityQueue<TKey, decimal>();
+            var evaluated = new HashSet<TKey>();
 
             bestNodes[start.Key] = start;
             toEvaluate.Enqueue(start.Key, start.EstimatedCost);

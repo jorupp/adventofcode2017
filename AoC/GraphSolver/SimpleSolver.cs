@@ -8,10 +8,10 @@ namespace AoC.GraphSolver
 {
     public class SimpleSolver : ISolver
     {
-        public TNode Evaluate<TNode>(TNode start) where TNode : Node<TNode>
+        public TNode Evaluate<TNode, TKey>(TNode start, TKey key) where TNode : Node<TNode, TKey>
         {
-            var evaluated = new Dictionary<string, TNode>();
-            var toEvaluate = new Dictionary<string, TNode>();
+            var evaluated = new Dictionary<TKey, TNode>();
+            var toEvaluate = new Dictionary<TKey, TNode>();
             toEvaluate[start.Key] = start;
 
             while (true)

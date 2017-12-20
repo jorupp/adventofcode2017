@@ -2,6 +2,6 @@
 {
     public interface ISolver
     {
-        TNode Evaluate<TNode>(TNode start) where TNode : Node<TNode>;
+        TNode Evaluate<TNode, TKey>(TNode start, TKey key) where TNode : Node<TNode, TKey>;
     }
 }

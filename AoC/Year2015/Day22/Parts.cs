@@ -15,7 +15,7 @@ namespace AoC.Year2015.Day22
         {
             RunScenario(name, () =>
             {
-                var finalState = solver.Evaluate(initialState);
+                var finalState = solver.Evaluate(initialState, initialState.Key);
                 Console.WriteLine($"{name} - SpentMana: {finalState.SpentMana}");
                 //var states = finalState.SelectDeep(s => s == null || s.Parent == null || s.Parent.Item1 == null ? new GameNode[0] : new[] { s.Parent.Item1 }).ToList();
                 //var moves = states.Where(i => i.Parent != null && i.Parent.Item2 != null).Select(i => string.Format("{0} - {1} -> {2} - {3} {4} {5} - {6} {7}", i.Parent.Item2, i.PlayerMana, i.SpentMana, i.ShieldTurnsLeft, i.PoisonTurnsLeft, i.RechargeTurnsLeft, i.PlayerHP, i.BossHP)).Reverse().ToList();

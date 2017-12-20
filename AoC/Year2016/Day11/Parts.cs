@@ -18,12 +18,12 @@ namespace AoC.Year2016.Day11
     }
 
     [DebuggerDisplay("{Description}")]
-    public class FacilityNode : Node<FacilityNode>
+    public class FacilityNode : Node<FacilityNode, long>
     {
         public StaticInfo StaticInfo;
-        public int ElevatorFloor;
-        public int[] GeneratorFloors;
-        public int[] MicrochipFloors;
+        public sbyte ElevatorFloor;
+        public sbyte[] GeneratorFloors;
+        public sbyte[] MicrochipFloors;
         public int Moves;
 
         public FacilityNode()
@@ -34,8 +34,10 @@ namespace AoC.Year2016.Day11
         {
             this.StaticInfo = parent.StaticInfo;
             this.ElevatorFloor = parent.ElevatorFloor;
-            this.GeneratorFloors = parent.GeneratorFloors.ToArray();
-            this.MicrochipFloors = parent.MicrochipFloors.ToArray();
+            this.GeneratorFloors = new sbyte[parent.GeneratorFloors.Length];
+            Array.Copy(parent.GeneratorFloors, this.GeneratorFloors, parent.GeneratorFloors.Length);
+            this.MicrochipFloors = new sbyte[parent.MicrochipFloors.Length];
+            Array.Copy(parent.MicrochipFloors, this.MicrochipFloors, parent.MicrochipFloors.Length);
             this.Moves = parent.Moves + 1;
         }
 
@@ -73,9 +75,21 @@ namespace AoC.Year2016.Day11
                 MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i) +
                 GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i) - 4);
 
-        public override object[] Keys => 
-            new object[] { ElevatorFloor + "_" + string.Join("_", GeneratorFloors) + "_" + string.Join("_", MicrochipFloors) };
-            //new object[] {ElevatorFloor}.Concat(GeneratorFloors.Cast<object>()).Concat(MicrochipFloors.Cast<object>()).ToArray();
+        protected override long GetKey()
+        {
+            long val = ElevatorFloor - 1;
+            foreach (var g in GeneratorFloors)
+            {
+                val = (val << 2) + (g - 1);
+            }
+            foreach (var g in MicrochipFloors)
+            {
+                val = (val << 2) + (g - 1);
+            }
+            return val;
+        }
+        //new object[] { ElevatorFloor + "_" + string.Join("_", GeneratorFloors) + "_" + string.Join("_", MicrochipFloors) };
+        //new object[] {ElevatorFloor}.Concat(GeneratorFloors.Cast<object>()).Concat(MicrochipFloors.Cast<object>()).ToArray();
 
         public override string Description
         {
@@ -91,18 +105,17 @@ namespace AoC.Year2016.Day11
 
         public override IEnumerable<FacilityNode> GetAdjacent()
         {
-            var directions = new[] {-1, 1}
-                .Where(i => this.ElevatorFloor + i >= 1 && this.ElevatorFloor + i <= StaticInfo.TargetFloor).ToArray();
-            foreach (var dir in directions)
+            foreach (var dir in new sbyte[] { -1, 1 })
             {
+                if (!(1 <= this.ElevatorFloor + dir && this.ElevatorFloor + dir <= StaticInfo.TargetFloor))
+                    continue;
                 // ok, so what are we taking...
                 var options = this.MicrochipFloors.Select((f, ix) => new { type = 1, ix, f}).Where(i => i.f == this.ElevatorFloor)
                     .Concat(this.GeneratorFloors.Select((f, ix) => new { type = 2, ix, f }).Where(i => i.f == this.ElevatorFloor))
                     .ToArray();
-                // optimization: if going down, always take one, if going up, always take two
-                var sets = dir == -1
-                    ? options.Select(i => new[] {i}).ToArray()
-                    : options.SelectMany(i => options.Where(ii => i != ii).Select(ii => new[] {i, ii})).ToArray();
+                var sets = 
+                    options.SelectMany((i, ix) => options.Skip(ix + 1).Select(ii => new[] {i, ii}))
+                    .Concat(options.Select(i => new[] { i }));
                 foreach (var set in sets)
                 {
                     var next = new FacilityNode(this);
@@ -133,7 +146,7 @@ namespace AoC.Year2016.Day11
                 var lines = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 // https://regex101.com/
                 var pattern = new Regex(@"a ([^ -]*)(|-compatible) (generator|microchip)");
-                var initialState = new FacilityNode() { ElevatorFloor = 1, GeneratorFloors = new int[0], MicrochipFloors = new int[0] };
+                var initialState = new FacilityNode() { ElevatorFloor = 1, GeneratorFloors = new sbyte[0], MicrochipFloors = new sbyte[0] };
                 var types = new List<string>();
                 for(var i = 0; i < lines.Length; i++)
                 {
@@ -149,17 +162,17 @@ namespace AoC.Year2016.Day11
                         var typeIx = types.IndexOf(type);
                         while (initialState.GeneratorFloors.Length <= typeIx)
                         {
-                            initialState.GeneratorFloors = initialState.GeneratorFloors.Concat(new[] { -1 }).ToArray();
-                            initialState.MicrochipFloors = initialState.MicrochipFloors.Concat(new[] { -1 }).ToArray();
+                            initialState.GeneratorFloors = initialState.GeneratorFloors.Concat(new sbyte[] { -1 }).ToArray();
+                            initialState.MicrochipFloors = initialState.MicrochipFloors.Concat(new sbyte[] { -1 }).ToArray();
                         }
 
                         if (item == "generator")
                         {
-                            initialState.GeneratorFloors[typeIx] = i + 1;
+                            initialState.GeneratorFloors[typeIx] = (sbyte)(i + 1);
                         }
                         else if (item == "microchip")
                         {
-                            initialState.MicrochipFloors[typeIx] = i + 1;
+                            initialState.MicrochipFloors[typeIx] = (sbyte)(i + 1);
                         }
                         else
                         {
@@ -170,7 +183,7 @@ namespace AoC.Year2016.Day11
                 initialState.StaticInfo = new StaticInfo() {  Floors = lines.Length, TargetFloor = lines.Length, Types = types.ToArray() };
                 modifyInitialState?.Invoke(initialState);
 
-                var finalState = new RealSolver().Evaluate(initialState);
+                var finalState = new RealSolver().Evaluate(initialState, initialState.Key);
                 Console.WriteLine($"{title} - moves: {finalState.CurrentCost}");
             });
         }

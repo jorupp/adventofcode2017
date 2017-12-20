@@ -6,19 +6,10 @@ using System.Threading.Tasks;
 
 namespace AoC.GraphSolver
 {
-    public abstract class Node<TNode> where TNode : Node<TNode>
+    public abstract class Node<TNode, TKey> where TNode : Node<TNode, TKey>
     {
         protected Node()
         {
-            _keyValue = new Lazy<string>(() =>
-            {
-                var keys = this.Keys;
-                if (keys.Length == 0)
-                    return "";
-                if (keys.Length == 1)
-                    return keys[0].ToString();
-                return string.Join("_", this.Keys);
-            });
         }
 
         public abstract IEnumerable<TNode> GetAdjacent();
@@ -26,9 +17,30 @@ namespace AoC.GraphSolver
         public abstract bool IsComplete { get; }
         public abstract decimal CurrentCost { get; }
         public abstract decimal EstimatedCost { get; }
-        public abstract object[] Keys { get; }
-        private Lazy<string> _keyValue;
-        public string Key => _keyValue.Value;
+
+        protected abstract TKey GetKey();
+
+        private bool _builtKey = false;
+        private TKey _keyValue = default(TKey);
+        public TKey Key
+        {
+            get
+            {
+                if (!_builtKey)
+                {
+                    _builtKey = true;
+                    _keyValue = GetKey();
+                }
+                return _keyValue;
+            }
+        }
         public abstract string Description { get; }
+    }
+
+    public abstract class Node<TNode> : Node<TNode, string> where TNode : Node<TNode>
+    {
+        public abstract object[] Keys { get; }
+
+        protected override string GetKey() => string.Join("_", this.Keys);
     }
 }
