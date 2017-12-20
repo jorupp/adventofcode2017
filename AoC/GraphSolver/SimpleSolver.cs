@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AoC.GraphSolver
 {
-    public class Solver
+    public class SimpleSolver : ISolver
     {
         public TNode Evaluate<TNode>(TNode start) where TNode : Node<TNode>
         {
