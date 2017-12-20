@@ -15,6 +15,7 @@ namespace AoC.Year2016.Day11
         public int Floors;
         public int TargetFloor = 4;
         public string[] Types;
+        public int[][] SwapSets;
     }
 
     [DebuggerDisplay("{Description}")]
@@ -60,6 +61,22 @@ namespace AoC.Year2016.Day11
                         // zap
                         return false;
                 }
+
+                // let's apply swapset-based pruning....
+                foreach (var set in StaticInfo.SwapSets)
+                {
+                    for (var i = 0; i < set.Length - 1; i++)
+                    {
+                        // if any member of the swapset (j) has both chip and generator above this (set[i]), it is invalid
+                        if (set.Skip(i + 1).Any(j =>
+                            MicrochipFloors[j] > MicrochipFloors[set[i]] &&
+                            GeneratorFloors[j] > GeneratorFloors[set[i]]))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
                 return true;
             }
         }
@@ -185,6 +202,12 @@ namespace AoC.Year2016.Day11
                     }
                 }
                 initialState.StaticInfo = new StaticInfo() {  Floors = lines.Length, TargetFloor = lines.Length, Types = types.ToArray() };
+                initialState.StaticInfo.SwapSets =
+                    initialState.GeneratorFloors
+                        .Select((i, ix) => new {ix, g = i, m = initialState.MicrochipFloors[ix]})
+                        .Where(i => i.g == i.m)
+                        .GroupBy(i => i.g, i => i.ix)
+                        .Select(g => g.ToArray()).ToArray();
                 modifyInitialState?.Invoke(initialState);
 
                 var finalState = new ParallelSolver(8).Evaluate(initialState, initialState.Key);
