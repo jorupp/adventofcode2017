@@ -71,8 +71,9 @@ namespace AoC.Year2016.Day11
             Moves + (MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i) +
                      GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i)) / 2m;
 
-        public override object[] Keys =>
-            new object[] {ElevatorFloor}.Concat(GeneratorFloors.Cast<object>()).Concat(MicrochipFloors.Cast<object>()).ToArray();
+        public override object[] Keys => 
+            new object[] { ElevatorFloor + "_" + string.Join("_", GeneratorFloors) + "_" + string.Join("_", MicrochipFloors) };
+            //new object[] {ElevatorFloor}.Concat(GeneratorFloors.Cast<object>()).Concat(MicrochipFloors.Cast<object>()).ToArray();
 
         public override string Description
         {
@@ -96,9 +97,10 @@ namespace AoC.Year2016.Day11
                 var options = this.MicrochipFloors.Select((f, ix) => new { type = 1, ix, f}).Where(i => i.f == this.ElevatorFloor)
                     .Concat(this.GeneratorFloors.Select((f, ix) => new { type = 2, ix, f }).Where(i => i.f == this.ElevatorFloor))
                     .ToArray();
-                var sets = options.Select(i => new[] {i})
-                    .Concat(options.SelectMany(i => options.Where(ii => i != ii).Select(ii => new[] {i, ii})))
-                    .ToArray();
+                // optimization: if going down, always take one, if going up, always take two
+                var sets = dir == -1
+                    ? options.Select(i => new[] {i}).ToArray()
+                    : options.SelectMany(i => options.Where(ii => i != ii).Select(ii => new[] {i, ii})).ToArray();
                 foreach (var set in sets)
                 {
                     var next = new FacilityNode(this);
@@ -122,7 +124,7 @@ namespace AoC.Year2016.Day11
 
     public class Part1 : BasePart
     {
-        protected void RunScenario(string title, string input)
+        protected void RunScenario(string title, string input, Action<FacilityNode> modifyInitialState = null)
         {
             RunScenario(title, () =>
             {
@@ -164,6 +166,7 @@ namespace AoC.Year2016.Day11
                     }
                 }
                 initialState.StaticInfo = new StaticInfo() {  Floors = lines.Length, TargetFloor = lines.Length, Types = types.ToArray() };
+                modifyInitialState?.Invoke(initialState);
 
                 var finalState = new RealSolver().Evaluate(initialState);
                 Console.WriteLine($"{title} - moves: {finalState.CurrentCost}");
@@ -180,7 +183,10 @@ The fourth floor contains nothing relevant.");
 The second floor contains a polonium-compatible microchip and a promethium-compatible microchip.
 The third floor contains nothing relevant.
 The fourth floor contains nothing relevant.");
-
+            RunScenario("real part 2", @"The first floor contains a polonium generator, a thulium generator, a thulium-compatible microchip, a promethium generator, a ruthenium generator, a ruthenium-compatible microchip, a cobalt generator, and a cobalt-compatible microchip, a elerium generator, a elerium-compatible microchip, a dilithium generator, a dilithium-compatible microchip.
+The second floor contains a polonium-compatible microchip and a promethium-compatible microchip.
+The third floor contains nothing relevant.
+The fourth floor contains nothing relevant.");
         }
     }
 }
