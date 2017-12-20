@@ -57,6 +57,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Year2016\Day11\Parts.cs" />
+    <Compile Include="Year2017\Day20\Particle.cs" />
+    <Compile Include="Year2017\Day20\Part1.cs" />
+    <Compile Include="Year2017\Day20\Part2.cs" />
+    <Compile Include="Year2017\Day20\Vector.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
