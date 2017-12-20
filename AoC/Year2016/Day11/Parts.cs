@@ -113,9 +113,13 @@ namespace AoC.Year2016.Day11
                 var options = this.MicrochipFloors.Select((f, ix) => new { type = 1, ix, f}).Where(i => i.f == this.ElevatorFloor)
                     .Concat(this.GeneratorFloors.Select((f, ix) => new { type = 2, ix, f }).Where(i => i.f == this.ElevatorFloor))
                     .ToArray();
-                var sets = 
-                    options.SelectMany((i, ix) => options.Skip(ix + 1).Select(ii => new[] {i, ii}))
-                    .Concat(options.Select(i => new[] { i }));
+
+                // can take one or two up, but going down, only ever take one
+                var sets = options.Select(i => new[] {i});
+                if (dir == 1)
+                {
+                    sets = sets.Concat(options.SelectMany((i, ix) => options.Skip(ix + 1).Select(ii => new[] {i, ii})));
+                }
                 foreach (var set in sets)
                 {
                     var next = new FacilityNode(this);
