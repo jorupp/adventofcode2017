@@ -68,8 +68,10 @@ namespace AoC.Year2016.Day11
         public override decimal CurrentCost => Moves;
 
         public override decimal EstimatedCost =>
-            Moves + (MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i) +
-                     GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i)) / 2m;
+            // once, we can move two things at a time, the rest of the moves are one-at-a-time (because we have to keep an item in the elevator)
+            Moves + Math.Max(0, 
+                MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i) +
+                GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i) - 4);
 
         public override object[] Keys => 
             new object[] { ElevatorFloor + "_" + string.Join("_", GeneratorFloors) + "_" + string.Join("_", MicrochipFloors) };
