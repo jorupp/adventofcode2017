@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GraphSolver\ISolver.cs" />
+    <Compile Include="GraphSolver\ParallelSolver.cs" />
     <Compile Include="GraphSolver\RealSolver.cs" />
     <Compile Include="Year2015\Day22\GameNode.cs" />
     <Compile Include="Year2015\Day22\Parts.cs" />

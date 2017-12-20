@@ -187,7 +187,7 @@ namespace AoC.Year2016.Day11
                 initialState.StaticInfo = new StaticInfo() {  Floors = lines.Length, TargetFloor = lines.Length, Types = types.ToArray() };
                 modifyInitialState?.Invoke(initialState);
 
-                var finalState = new RealSolver().Evaluate(initialState, initialState.Key);
+                var finalState = new ParallelSolver(8).Evaluate(initialState, initialState.Key);
                 Console.WriteLine($"{title} - moves: {finalState.CurrentCost}");
             });
         }
