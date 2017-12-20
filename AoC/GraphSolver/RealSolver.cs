@@ -13,7 +13,7 @@ namespace AoC.GraphSolver
         {
             TNode bestComplete = null;
             var bestNodes = new Dictionary<string, TNode>();
-            var toEvaluate = new SimplePriorityQueue<string, int>();
+            var toEvaluate = new SimplePriorityQueue<string, decimal>();
             var evaluated = new HashSet<string>();
 
             bestNodes[start.Key] = start;
@@ -21,6 +21,12 @@ namespace AoC.GraphSolver
 
             while (true)
             {
+                if (toEvaluate.Count == 0)
+                {
+                    var x = bestNodes.Select(n => new {node = n.Value, next = n.Value.GetAdjacent().ToArray()})
+                        .ToArray();
+
+                }
                 var workKey = toEvaluate.Dequeue();
                 var work = bestNodes[workKey];
                 if (bestComplete != null && bestComplete.CurrentCost <= work.EstimatedCost)

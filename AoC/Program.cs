@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AoC.Year2015.Day22;
 
 namespace AoC
 {
@@ -12,8 +11,9 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            new Part1().Run();
-            new Part2().Run();
+            //new Year2015.Day22.Part1().Run();
+            //new Year2015.Day22.Part2().Run();
+            new Year2016.Day11.Part1().Run();
             if (Debugger.IsAttached)
             {
                 Console.ReadLine();

@@ -71,8 +71,8 @@ namespace AoC.Year2015.Day22
         public string LastAction { get { return Parent == null ? null : Parent.Item2; } }
         public override bool IsValid { get { return PlayerHP > 0 && PlayerMana >= 0; } }
         public override bool IsComplete { get { return BossHP <= 0; } }
-        public override int CurrentCost { get { return SpentMana + (Parent != null && Parent.Item2 == "Do nothing" ? 1 : 0); } }
-        public override int EstimatedCost { get { return CurrentCost + Math.Max(0, (BossHP * 9)); } } // most efficient damage to boss is 9 mana per HP
+        public override decimal CurrentCost { get { return SpentMana + (Parent != null && Parent.Item2 == "Do nothing" ? 1 : 0); } }
+        public override decimal EstimatedCost { get { return CurrentCost + Math.Max(0, (BossHP * 9)); } } // most efficient damage to boss is 9 mana per HP
         public override object[] Keys { get { return new object[] { PlayerMana, PlayerHP, BossHP, BossDmg, CurrentCost, ShieldTurnsLeft, PoisonTurnsLeft, RechargeTurnsLeft, ShieldActive, PoisonActive, RechargeActive, IsPlayerTurn }; } }
         public override string Description
         {

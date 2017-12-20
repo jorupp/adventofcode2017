@@ -11,8 +11,8 @@ namespace AoC.GraphSolver
         public abstract IEnumerable<TNode> GetAdjacent();
         public abstract bool IsValid { get; }
         public abstract bool IsComplete { get; }
-        public abstract int CurrentCost { get; }
-        public abstract int EstimatedCost { get; }
+        public abstract decimal CurrentCost { get; }
+        public abstract decimal EstimatedCost { get; }
         public abstract object[] Keys { get; }
         public string Key { get { return string.Join("_", Keys); } }
         public abstract string Description { get; }
