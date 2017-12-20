@@ -70,10 +70,10 @@ namespace AoC.Year2016.Day11
         public override decimal CurrentCost => Moves;
 
         public override decimal EstimatedCost =>
-            // once, we can move two things at a time, the rest of the moves are one-at-a-time (because we have to keep an item in the elevator)
+            // we can move one pair of things to the top right away.  all ther rest come one-at-a-time and require 2x moves
             Moves + Math.Max(0, 
-                MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i) +
-                GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i) - 4);
+                MicrochipFloors.Sum(i => StaticInfo.TargetFloor - i)*2 +
+                GeneratorFloors.Sum(i => StaticInfo.TargetFloor - i)*2 - StaticInfo.TargetFloor * 2);
 
         protected override long GetKey()
         {
