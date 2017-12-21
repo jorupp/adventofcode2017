@@ -96,6 +96,11 @@ namespace AoC.Year2017.Day21
             return grid.Select(i => string.Join("", i.Select(ii => ii ? "#" : "."))).ToArray();
         }
 
+        int MakeKey(bool[][] part)
+        {
+            return new[] { part.Length == 3, part.Length == 2 }.Concat(part.SelectMany(i => i)).Aggregate(0, (a, i) => a * 2 + (i ? 1 : 0));
+        }
+
         protected void RunScenario(string title, int iterations, string input)
         {
             RunScenario(title, () =>
@@ -107,12 +112,6 @@ namespace AoC.Year2017.Day21
                     .Select(i => i.ToCharArray().Select(ii => ii == '#').ToArray())
                     .ToArray();
 
-
-                int MakeKey(bool[][] part)
-                {
-                    var r = new [] { part.Length == 3, part.Length == 2 }.Concat(part.SelectMany(i => i)).Aggregate(0, (a, i) => a *2 + (i?1:0));
-                    return r;
-                }
 
                 var rawBook = input.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(i => i.Split(" => ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
@@ -126,8 +125,17 @@ namespace AoC.Year2017.Day21
                 //var x = rawBook.GroupBy(i => MakeKey(i[0]), i => i).Select(i => new { i.Key, i, Count = i.Count() }).ToArray();
                 var book = rawBook.ToDictionary(i => MakeKey(i[0]), i => i[1]);
 
+                var mapCache = new Dictionary<int, bool[][]>();
                 bool[][] Map(bool[][] part)
                 {
+                    var key = MakeKey(part);
+                    {
+                        if (mapCache.TryGetValue(key, out var result))
+                        {
+                            return result;
+                        }
+                    }
+
                     var tries = new[]
                     {
                         part,
@@ -137,32 +145,20 @@ namespace AoC.Year2017.Day21
                         .SelectMany(i => new[] { i, Rotate(i) })
                         .SelectMany(i => new[] { i, FlipH(i), FlipV(i) })
                         .SelectMany(i => new[] { i, Rotate(i) })
+                        .Select(MakeKey)
+                        .Distinct()
                         .ToArray();
-                    foreach(var tri in tries)
-                    {
-                        if(book.TryGetValue(MakeKey(tri), out var result))
-                        {
-                            //var g1 = ToGrid(part);
-                            //var g2 = ToGrid(tri);
-                            //var g3 = ToGrid(result);
-                            //Console.WriteLine($"{g1[0]}    {g2[0]}    {g3[0]}");
-                            //Console.WriteLine($"{g1[1]} -> {g2[1]} -> {g3[1]}");
-                            //if (g1.Length == 3)
-                            //{
-                            //    Console.WriteLine($"{g1[2]}    {g2[2]}    {g3[2]}");
-                            //    Console.WriteLine($"              {g3[3]}");
-                            //}
-                            //else
-                            //{
-                            //    Console.WriteLine($"            {g3[2]}");
-                            //}
-                            //Console.WriteLine($"{ToString(part)} -> {ToString(tri)} -> {ToString(result)}");
-                            return result;
-                        }
-                    }
-                    throw new ArgumentException();
-                }
 
+                    {
+                        var match = tries.Select(i => book.TryGetValue(i, out var result) ? result : null).Single(i => i != null);
+                        foreach (var tri in tries)
+                        {
+                            mapCache[tri] = match;
+                        }
+                        return match;
+                    }
+                }
+                
 
                 var state = initialState;
                 for(var i=0; i <iterations; i++)
