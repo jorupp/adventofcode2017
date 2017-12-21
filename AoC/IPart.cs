@@ -14,6 +14,8 @@ namespace AoC
 
     public abstract class BasePart : IPart
     {
+        [DebuggerNonUserCode]
+
         protected void RunScenario(string name, Action run)
         {
             var sw = Stopwatch.StartNew();
