@@ -30,6 +30,14 @@ namespace AoC.GraphSolver
             while (true)
             {
                 var tasks = new List<Task<List<TNode>>>();
+                if (toEvaluate.Count == 0)
+                {
+                    //var x = bestNodes.Select(n => new { node = n.Value, next = n.Value.GetAdjacent().ToArray() })
+                    //    .ToArray();
+                    var bestLeft = bestNodes.Values.OrderBy(i => i.CurrentCost).First();
+                    Console.WriteLine("Best of the rest....");
+                    return bestLeft;
+                }
                 for (var i = 0; i < _maxThreads && toEvaluate.Count > 0; i++)
                 {
                     var workKey = toEvaluate.Dequeue();

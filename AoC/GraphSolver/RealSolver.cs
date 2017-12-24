@@ -23,8 +23,11 @@ namespace AoC.GraphSolver
             {
                 if (toEvaluate.Count == 0)
                 {
-                    var x = bestNodes.Select(n => new {node = n.Value, next = n.Value.GetAdjacent().ToArray()})
-                        .ToArray();
+                    //var x = bestNodes.Select(n => new { node = n.Value, next = n.Value.GetAdjacent().ToArray() })
+                    //    .ToArray();
+                    var bestLeft = bestNodes.Values.OrderBy(i => i.CurrentCost).First();
+                    Console.WriteLine("Best of the rest....");
+                    return bestLeft;
 
                 }
                 var workKey = toEvaluate.Dequeue();
