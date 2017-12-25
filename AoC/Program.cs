@@ -21,7 +21,8 @@ namespace AoC
             //new Year2017.Day23.Part1().Run();
             //new Year2017.Day23.Part2().Run();
             //new Year2017.Day24.Part1Alt().Run();
-            new Year2017.Day24.Part2().Run();
+            //new Year2017.Day24.Part2().Run();
+            new Year2017.Day25.Part1().Run();
             if (Debugger.IsAttached)
             {
                 Console.WriteLine("Press enter to exit");
